@@ -1,12 +1,8 @@
 const bcrypt = require("bcrypt");
-
 const Users = require("../models/user");
-
 const randomString = require("../utils/randomString");
-
 const transporter = require("../mailSender/transporter");
-
-const { EMAIL_ID } = require("../utils/config");
+const { EMAIL_ID ,URL } = require("../utils/config");
 
 const userController = {
   register: async (request, response) => {
@@ -52,7 +48,7 @@ const userController = {
         from: EMAIL_ID,
         to: email,
         subject: "Password Reset",
-        text: `Click the link to reset your password: http://localhost:5173/verify/${key}`,
+        text: `Click the link to reset your password: ${URL}/verify/${key}`,
       });
 
       response.status(200).json({
