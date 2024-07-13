@@ -2,7 +2,7 @@ const bcrypt = require("bcrypt");
 const Users = require("../models/user");
 const randomString = require("../utils/randomString");
 const transporter = require("../mailSender/transporter");
-const { EMAIL_ID ,URL } = require("../utils/config");
+const { EMAIL_ID, URL, SECRET_KEY } = require("../utils/config");
 
 const userController = {
   register: async (request, response) => {
@@ -29,7 +29,22 @@ const userController = {
       response.status(500).send({ message: error.message });
     }
   },
-
+  login: async (request, response) => {
+    try {
+      const { email, password } = request.body;
+      const user = await Users.findOne({ email });
+      if (!user) {
+        return response.status(400).json({ message: "User not found" });
+      }
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) {
+        return response.status(400).send({ message: "Invalid password" });
+      }
+      response.status(200).json({ message: "Login succesfully" });
+    } catch (error) {
+      response.status(500).json({ message: error.message });
+    }
+  },
   forgot: async (request, response) => {
     try {
       const { email } = request.body;
@@ -59,7 +74,6 @@ const userController = {
       response.status(500).json({ message: error.message });
     }
   },
-
   verify: async (request, response) => {
     try {
       const { key } = request.params;
@@ -79,14 +93,15 @@ const userController = {
       response.status(500).json({ message: error.message });
     }
   },
-
   reset: async (request, response) => {
     try {
       const { key, password } = request.body;
 
       const user = await Users.findOne({ key });
       if (!user) {
-        return response.status(404).json({ message: "The link was expiried!!!" });
+        return response
+          .status(404)
+          .json({ message: "The link was expiried!!!" });
       }
       const hashedPassword = await bcrypt.hash(password, 10);
 

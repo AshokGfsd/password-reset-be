@@ -2,9 +2,15 @@ const express = require("express");
 const userRouter = require("./routes/userRoutes");
 const cors = require("cors");
 const app = express();
+const { URL } = require("./utils/config");
 
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: URL,
+    credentials: true,
+  })
+);
 app.use("/users", userRouter);
 
 app.get("/", (request, response) => {
